@@ -1,0 +1,5 @@
+A complete understanding of GMM-EM: 
+https://towardsdatascience.com/gaussian-mixture-models-with-python-36dabed6212a
+
+Video Explanation
+https://www.youtube.com/watch?v=qMTuMa86NzU&t=312s
