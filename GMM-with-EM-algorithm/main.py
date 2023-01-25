@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 from Gaussian import GaussianMixtureModel
 
 if __name__ == '__main__':
-    data = np.loadtxt('dataset/data6D.txt.dat')
+    data = np.loadtxt('dataset/data2D_a1.txt')
     log_likelihoods = []
-    kmax = 2
+    kmax = 10
     for k in range(1, kmax+1):
         gmm = GaussianMixtureModel(data, k, False)
         means, covs, pi, log_likelihood = gmm.fit()
