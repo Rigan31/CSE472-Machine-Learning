@@ -10,6 +10,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\dataset\NumtaDB_with_aug\training-d.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\predicted.csv">
           <value>
             <Attribute>

@@ -497,7 +497,7 @@ test_predicted = model.forward(test_x)
 test_predicted = np.argmax(test_predicted, axis=1)
 test_predicted = test_predicted[:, None]
 
-with open('predicted.csv', 'w') as f:
+with open('1705031_prediction.csv', 'w') as f:
     f.write('FileName,Digit\n')
     for i in range(len(file_names_list)):
         f.write('{},{}\n'.format(file_names_list[i], test_predicted[i][0]))
