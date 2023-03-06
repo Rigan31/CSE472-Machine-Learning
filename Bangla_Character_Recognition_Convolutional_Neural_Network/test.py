@@ -1,14 +1,10 @@
-import numpy as np
-import pandas as pd
+import pickle
+import sys
 import os
 from tqdm import tqdm
 import cv2
+import numpy as np
 import math
-from sklearn.metrics import accuracy_score, f1_score
-from sklearn.metrics import confusion_matrix
-import pickle
-
-
 
 class ConvolutionLayer:
     def __init__(self, input_channel, output_channel, filters_dim, stride, padding):
@@ -444,35 +440,6 @@ def make_grayscale(image):
     return gray
 
 
-def load_images(data_folder):
-    images = []
-    file_name_list = []
-    for file_name in tqdm(os.listdir(data_folder)):
-        #print("file_name: ", file_name)
-        image = cv2.imread(os.path.join(data_folder, file_name))
-        if image is not None:
-            gray_image = make_grayscale(image)
-            images.append(gray_image)
-    # print("image shape")
-    # images = np.array(images)[:, None]
-    # print(images.shape)
-    # print("file_name_list: ", file_name_list)
-    return images
-
-
-def get_maximum_size_of_images(images):
-    max_height = 0
-    max_width = 0
-    for image in images:
-        height, width = image.shape
-        if height > max_height:
-            max_height = height
-        if width > max_width:
-            max_width = width
-
-    return max_height, max_width
-
-
 def preprocess_images(images, size):
     preprocess_images_list = []
     for images in tqdm(images):
@@ -494,280 +461,44 @@ def preprocess_images(images, size):
     return preprocess_images_list
 
 
-def load_csv(csv_path):
-    csv_data = pd.read_csv(csv_path)
-    return csv_data
-
-
-def get_labels(csv_data, label_name):
-    labels = csv_data[label_name]
-    return labels
-
-
-def get_one_hot_encoding(labels):
-    one_hot_encoding = pd.get_dummies(labels)
-    return one_hot_encoding
-
-
-def train_test_data():
-    image_path = './dataset/NumtaDB_with_aug/training-b//'
-    csv_path = './dataset/NumtaDB_with_aug/training-b.csv'
-
-    images = load_images(image_path)
-
-    # images = np.array(images)
-    # shape = get_maximum_size_of_images(images)
-    max_height, max_width = 28, 28
-    preprocess_images_list = preprocess_images(images, (max_height, max_width))
-    csv_data = load_csv(csv_path)
-    labels = get_labels(csv_data, 'digit')
-    one_hot_encoding = get_one_hot_encoding(labels)
-    # train_x, train_y = preprocess_images_list, labels
-    # train_x = np.array(train_x)
-    # print(train_x.shape)
-    # shuffle the data
-    # preprocess_images_list, one_hot_encoding = shuffle(preprocess_images_list, one_hot_encoding)
-    preprocess_images_list = np.array(preprocess_images_list)
-    train_size = int(len(preprocess_images_list) * 0.8)
-    train_x, test_x = preprocess_images_list[0:train_size], preprocess_images_list[
-                                                            train_size:len(preprocess_images_list)]
-    # train_y, test_y = one_hot_encoding[0:train_size], one_hot_encoding[train_size:len(one_hot_encoding)]
-    train_y, test_y = labels[0:train_size][:, None], labels[train_size:len(labels)][:, None]
-    print("train_x: ", train_x.shape)
-    print("train_y: ", train_y.shape)
-    print("test_x: ", test_x.shape)
-    print("test_y: ", test_y.shape)
-
-    return train_x, train_y, test_x, test_y
-
-
-def total_train_test_data():
-    image_path = './dataset/NumtaDB_with_aug/training-a//'
-    csv_path = './dataset/NumtaDB_with_aug/training-a.csv'
-
+def get_test_data(image_path):
+    csv_path = 'predicted.csv'
     images_list = []
-    labels_list = []
-    file_names_list = []
-    save_file_name_list = []
-    for file_name in (os.listdir(image_path)):
-        if file_name.endswith('.png'):
-            file_names_list.append(file_name)
-            save_file_name_list.append(file_name)
-
-    file_names_list.sort()
-    for file_name in tqdm(file_names_list):
-        image = cv2.imread(os.path.join(image_path, file_name))
-        if image is not None:
-            gray_image = make_grayscale(image)
-            images_list.append(gray_image)
-    csv_data = load_csv(csv_path)
-    labels = get_labels(csv_data, 'digit')
-    for label in labels:
-        labels_list.append(label)
-    print("file_names_list: ", file_names_list[0:10])
-    print("labels_list: ", labels_list[0:10])
-
-    image_path = './dataset/NumtaDB_with_aug/training-b//'
-    csv_path = './dataset/NumtaDB_with_aug/training-b.csv'
-
     file_names_list = []
     for file_name in (os.listdir(image_path)):
         if file_name.endswith('.png'):
             file_names_list.append(file_name)
-            save_file_name_list.append(file_name)
 
     file_names_list.sort()
-    for file_name in tqdm(file_names_list):
+
+    for file_name in (file_names_list):
         image = cv2.imread(os.path.join(image_path, file_name))
         if image is not None:
             gray_image = make_grayscale(image)
             images_list.append(gray_image)
-    csv_data = load_csv(csv_path)
-    labels = get_labels(csv_data, 'digit')
-    for label in labels:
-        labels_list.append(label)
-
-
-
-
-    image_path = './dataset/NumtaDB_with_aug/training-c//'
-    csv_path = './dataset/NumtaDB_with_aug/training-c.csv'
-    file_names_list = []
-    for file_name in (os.listdir(image_path)):
-        if file_name.endswith('.png'):
-            file_names_list.append(file_name)
-            save_file_name_list.append(file_name)
-
-    file_names_list.sort()
-    for file_name in tqdm(file_names_list):
-        image = cv2.imread(os.path.join(image_path, file_name))
-        if image is not None:
-            gray_image = make_grayscale(image)
-            images_list.append(gray_image)
-
-    csv_data = load_csv(csv_path)
-    labels = get_labels(csv_data, 'digit')
-    for label in labels:
-        labels_list.append(label)
 
     max_height, max_width = 28, 28
     preprocess_images_list = preprocess_images(images_list, (max_height, max_width))
-
-    save_file_name_list.sort()
-    print("images_list: ", len(images_list))
-    print("labels_list: ", len(labels_list))
-    print("preprocess_images_list: ", len(preprocess_images_list))
-    print("file_names_list: ", save_file_name_list[0:10])
-    print("labels_list: ", labels_list[0:10])
-
-    permutation = np.random.permutation(len(preprocess_images_list))
-    shuffled_image_list = np.array(preprocess_images_list)[permutation]
-    shuffled_label_list = np.array(labels_list)[permutation]
-    shuffled_file_name_list = np.array(save_file_name_list)[permutation]
-
-    print("shuffled image: ", shuffled_file_name_list[0:20])
-    print("shuffled label: ", shuffled_label_list[0:20])
-
-    train_size = int(len(shuffled_image_list) * 0.7)
-    train_x, validation_x = shuffled_image_list[0:train_size], shuffled_image_list[
-                                                            train_size:len(shuffled_image_list)]
-    # train_y, test_y = one_hot_encoding[0:train_size], one_hot_encoding[train_size:len(one_hot_encoding)]
-    train_y, validation_y = shuffled_label_list[0:train_size][:, None], shuffled_label_list[train_size:len(shuffled_label_list)][:, None]
-    print("train_x: ", train_x.shape)
-    print("train_y: ", train_y.shape)
-    print("test_x: ", validation_x.shape)
-    print("test_y: ", validation_y.shape)
-
-    return train_x, train_y, validation_x, validation_y
+    return preprocess_images_list, file_names_list
 
 
-def cross_entropy_loss(y_true, y_pred):
-    loss = - np.mean(y_true * np.log(y_pred + 1e-9))
-    return loss
+path_to_directory = sys.argv[1]
+# path_to_directory = './dataset/NumtaDB_with_aug/training-d//'
 
+print(path_to_directory)
+test_x, file_names_list = get_test_data(path_to_directory)
+print("test_x shape: ", test_x.shape)
 
+with open('model.pickle', 'rb') as f:
+    model = pickle.load(f)
 
-train_x, train_y, validation_x, validation_y = total_train_test_data()
-# train_x, train_y, validation_x, validation_y = train_test_data()
-mini_batch_size = 32
-epochs = 1
-lr = 0.001
-#total_train_test_data()
+print("model loaded")
+test_predicted = model.forward(test_x)
+test_predicted = np.argmax(test_predicted, axis=1)
+test_predicted = test_predicted[:, None]
 
-model = ConvoModel(learning_rate=lr, batch_size =mini_batch_size)
-
-
-train_loss_vs_epoch_list = []
-train_accuracy_vs_epoch_list = []
-train_f1_score_vs_epoch_list = []
-validation_loss_vs_epoch_list = []
-validation_accuracy_vs_epoch_list = []
-validation_f1_score_vs_epoch_list = []
-confusion_matrix_value = None
-
-for epoch in range(epochs):
-    for i in tqdm(range(0, len(train_x), mini_batch_size)):
-        x = train_x[i:i + mini_batch_size]
-        y = train_y[i:i + mini_batch_size]
-        # print("x: ", x.shape)
-        # print("y: ", y.shape)
-        output = model.forward(x)
-        # print("output shape: ", output.shape)
-        # print("output: ", output)
-        # loss = cross_entropy_loss(output, y)
-        # print("loss: ", loss)
-        # delta = cross_entropy_loss(output, y, derivative=True)
-        delta = output - y
-        model.backward(delta=delta)
-
-    print("Epoch: ", epoch + 1)
-    print("Doing the training data")
-    # train loss
-    train_output = model.forward(train_x)
-    train_pred = np.argmax(train_output, axis=1)
-    train_pred = train_pred[:, None]
-
-    train_loss = cross_entropy_loss(train_y, train_output)
-    train_loss_vs_epoch_list.append(train_loss)
-
-    train_accuracy = accuracy_score(train_y, train_pred)
-    train_accuracy_vs_epoch_list.append(train_accuracy)
-
-    train_f1_score = f1_score(train_y, train_pred, average='macro')
-    train_f1_score_vs_epoch_list.append(train_f1_score)
-
-    print("train accuracy: ", train_accuracy)
-    # validation loss
-    print("Doing the validation data")
-    validation_output = model.forward(validation_x)
-    validation_pred = np.argmax(validation_output, axis=1)
-    validation_pred = validation_pred[:, None]
-
-    validation_loss = cross_entropy_loss(validation_y, validation_output)
-    validation_loss_vs_epoch_list.append(validation_loss)
-
-    validation_accuracy = accuracy_score(validation_y, validation_pred)
-    validation_accuracy_vs_epoch_list.append(validation_accuracy)
-
-    validation_f1_score = f1_score(validation_y, validation_pred, average='macro')
-    validation_f1_score_vs_epoch_list.append(validation_f1_score)
-
-    print("validation accuracy: ", validation_accuracy)
-
-    confusion_matrix_value = confusion_matrix(validation_y, validation_pred)
-
-    # y_pred = model.forward(validation_x)
-    # y_true = validation_y
-    #
-
-
-    # print("y_pred: ", y_pred)
-
-    # print("prediction value")
-
-    # print(y_pred)
-    # print(np.argmax(y_true, axis=1))
-    # print("y_pred shape", np.argmax(y_pred, axis=1).shape)
-    # print("y_true shape", y_true.shape)
-    # print(np.argmax(y_pred, axis=1))
-    # print()
-    # print(y_true)
-    # y_pred = np.argmax(y_pred, axis=1)
-    # print("y_pred 2", y_pred)
-    # y_pred = y_pred[:, None]
-    # print("y_true shape: ", y_true.shape)
-    # print("y_pred shape: ", y_pred.shape)
-    # print("y_true: ", y_true)
-    # print("y_pred: ", y_pred)
-    # accuracy = accuracy_score(y_true, y_pred)
-    # cross_entropy = cross_entropy_loss(y_pred, y_true)
-    # macro_f1 = f1_score(y_true, y_pred, average='macro')
-    # confusion_matrix_value = confusion_matrix(y_true, y_pred)
-    # print("confusion_matrix_value: ", confusion_matrix_value)
-    # print("macro-f1: ", macro_f1)
-    # print("cross entropy loss: ", cross_entropy)
-    # validation_loss = validation_loss(y_pred, y_true)
-    # print("Accuracy: ", accuracy)
-
-    # confusion_matrix_value = confusion_matrix(y_true, y_pred)
-
-print("train_loss_vs_epoch_list: ", train_loss_vs_epoch_list)
-print("train_accuracy_vs_epoch_list: ", train_accuracy_vs_epoch_list)
-print("train_f1_score_vs_epoch_list: ", train_f1_score_vs_epoch_list)
-print("validation_loss_vs_epoch_list: ", validation_loss_vs_epoch_list)
-print("validation_accuracy_vs_epoch_list: ", validation_accuracy_vs_epoch_list)
-print("validation_f1_score_vs_epoch_list: ", validation_f1_score_vs_epoch_list)
-print("confusion_matrix_value: ", confusion_matrix_value)
-
-# this will save the model in pickle
-model.save_model()
-
-
-# loss vs epoch
-# accuracy vs epoch
-# f1 vs epoch
-# confusion matrix
-# loss vs learning rate for the last epoch
-
-
+with open('prediction.csv', 'w') as f:
+    f.write('FileName,Digit\n')
+    for i in range(len(file_names_list)):
+        f.write('{},{}\n'.format(file_names_list[i], test_predicted[i][0]))
 
